@@ -10,6 +10,8 @@ export const sql = postgres(process.env.DATABASE_URL, {
     // Kolom DATE dikirim apa adanya ('2026-10-18'), bukan objek Date,
     // supaya tidak bergeser karena zona waktu.
     date: { to: 1082, from: [1082], serialize: (x) => x, parse: (x) => x },
+    // Kolom NUMERIC dikirim sebagai angka JSON (seperti Supabase), bukan string "12.50".
+    numeric: { to: 1700, from: [1700], serialize: (x) => String(x), parse: (x) => Number(x) },
   },
 });
 

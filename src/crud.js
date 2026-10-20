@@ -140,12 +140,31 @@ export async function get(user, name, id) {
   return row;
 }
 
+const MAX_BULK = 1000;
+
+// Body objek -> satu baris. Body array -> banyak baris dalam satu transaksi
+// (semua berhasil atau semua batal). Semua baris harus punya kolom yang sama,
+// supaya kolom yang tidak diisi tetap memakai nilai default, bukan NULL.
 export async function create(user, name, body) {
   const t = tableFor(name, 'create');
-  const cols = pickColumns(t, body, { allowPk: t.pk !== 'id' }); // varieties memakai "code"
-  const [row] = await withUser(user.id, (tx) => tx`
+  const allowPk = t.pk !== 'id'; // varieties memakai "code"
+  if (!Array.isArray(body)) {
+    const cols = pickColumns(t, body, { allowPk });
+    const [row] = await withUser(user.id, (tx) => tx`
+      insert into ${sql(name)} ${sql(body, cols)} returning *`);
+    return row;
+  }
+  if (body.length === 0) return [];
+  if (body.length > MAX_BULK) throw new HttpError(413, `max ${MAX_BULK} rows per request`);
+  const cols = pickColumns(t, body[0], { allowPk });
+  const key = [...cols].sort().join(',');
+  for (const row of body) {
+    if (pickColumns(t, row, { allowPk }).sort().join(',') !== key) {
+      throw new HttpError(400, 'all rows must have the same columns');
+    }
+  }
+  return withUser(user.id, (tx) => tx`
     insert into ${sql(name)} ${sql(body, cols)} returning *`);
-  return row;
 }
 
 export async function update(user, name, id, body) {

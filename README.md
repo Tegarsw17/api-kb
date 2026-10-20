@@ -49,7 +49,7 @@ Semua endpoint (kecuali tiga yang pertama) butuh header
 | `DELETE /api/photos/:path` | Owner saja |
 | `GET /api/<tabel>` | Daftar baris (filter di bawah) |
 | `GET /api/<tabel>/:id` | Satu baris |
-| `POST /api/<tabel>` | Tambah baris, body JSON |
+| `POST /api/<tabel>` | Tambah baris, body JSON. Body array = banyak baris sekaligus (maks 1000, satu transaksi, kolom harus sama) |
 | `PATCH /api/<tabel>/:id` | Ubah kolom tertentu |
 | `DELETE /api/<tabel>/:id` | Hapus |
 
