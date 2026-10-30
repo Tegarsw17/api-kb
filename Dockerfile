@@ -9,6 +9,11 @@ RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit
 
 COPY src ./src
 
+# Commit yang di-build, tampil di /api/health. Diisi oleh workflow deploy;
+# build manual tanpa --build-arg akan tampil "unknown".
+ARG GIT_SHA=unknown
+ENV GIT_SHA=$GIT_SHA
+
 # Jalan sebagai user biasa (uid 1000), bukan root.
 USER node
 EXPOSE 3000

@@ -25,6 +25,16 @@ jobs:
             set -e
             cd ~/api-kb
             git pull --ff-only
+            if [ "$(git rev-parse HEAD)" != "${{ github.sha }}" ]; then
+              echo "VPS ada di $(git rev-parse HEAD), bukan ${{ github.sha }} (ada push baru di tengah jalan?)"; exit 1
+            fi
+            SHA=$(echo "${{ github.sha }}" | cut -c1-7)
             cd ~/stack
-            docker compose up -d --build --wait api
+            docker compose build --build-arg GIT_SHA=$SHA api
+            docker compose up -d --wait api
+            # pastikan yang jalan benar-benar commit ini
+            HEALTH=$(docker compose exec -T api wget -qO- http://127.0.0.1:3000/api/health)
+            echo "$HEALTH"
+            echo "$HEALTH" | grep -q "\"version\":\"$SHA\"" || { echo "Versi tidak cocok"; exit 1; }
             docker image prune -f
+            echo "API $SHA sudah jalan"

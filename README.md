@@ -36,7 +36,7 @@ Semua endpoint (kecuali tiga yang pertama) butuh header
 
 | Method & path | Keterangan |
 |---|---|
-| `GET /api/health` | Cek server + database |
+| `GET /api/health` | Cek server + database → `{ok, version, started}`. `version` = commit yang sedang jalan |
 | `POST /api/auth/setup` | `{username, full_name, password}`. Membuat owner pertama. Ditolak (403) jika owner sudah ada. |
 | `POST /api/auth/login` | `{username, password}` → `{token, user_id, role}`. Token berlaku 30 hari. Maks 10 percobaan gagal / 15 menit / IP. |
 | `GET /api/auth/me` | Profil user yang login |

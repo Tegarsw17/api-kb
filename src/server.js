@@ -17,6 +17,9 @@ if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 if (JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be at least 32 characters');
 
 const MAX_JSON_BYTES = 1024 * 1024;
+// Commit yang sedang jalan (diisi saat build: --build-arg GIT_SHA=...), tampil di /api/health.
+const VERSION = process.env.GIT_SHA || 'dev';
+const STARTED = new Date().toISOString();
 const PUBLIC = new Set(['GET /api/health', 'POST /api/auth/login', 'POST /api/auth/setup']);
 
 const app = new Router();
@@ -27,7 +30,7 @@ const tokenFor = (id, role) => signToken({ sub: id, role }, JWT_SECRET);
 // ---------------------------------------------------------------------
 app.get('/api/health', async () => {
   await sql`select 1`;
-  return { ok: true };
+  return { ok: true, version: VERSION, started: STARTED };
 });
 
 // Membuat akun owner pertama. Setelah owner ada, endpoint ini menolak.
