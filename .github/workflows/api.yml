@@ -1,0 +1,30 @@
+name: Deploy API
+
+# The VPS builds the image itself from its clone at ~/api-kb
+# (~/stack/docker-compose.yml: `api: build: ../api-kb`), so this only pulls and rebuilds there.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # tombol "Run workflow" manual di tab Actions
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy ke VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/api-kb
+            git pull --ff-only
+            cd ~/stack
+            docker compose up -d --build --wait api
+            docker image prune -f
